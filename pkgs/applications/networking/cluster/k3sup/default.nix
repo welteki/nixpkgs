@@ -17,16 +17,14 @@ buildGoModule rec {
     sha256 = "sha256-6WYUmC2uVHFGLsfkA2EUOWmmo1dSKJzI4MEdRnlLgYY=";
   };
 
-  buildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper ];
 
-  overrideModAttrs = (_: {
-    postBuild = ''
-      substituteInPlace vendor/github.com/alexellis/go-execute/pkg/v1/exec.go \
-        --replace "/bin/bash" "bash"
-    '';
-  });
+  vendorSha256 = "sha256-Pd+BgPWoxf1AhP0o5SgFSvy4LyUQB7peKWJk0BMy7ds=";
 
-  vendorSha256 = "sha256-VT1Xz1FOPy5fW7p4qskYJzmS7xaXt4mlMLkoHpzHMq0=";
+  postConfigure = ''
+    substituteInPlace vendor/github.com/alexellis/go-execute/pkg/v1/exec.go \
+      --replace "/bin/bash" "${bash}/bin/bash"
+  '';
 
   CGO_ENABLED = 0;
 
@@ -38,7 +36,7 @@ buildGoModule rec {
 
   postInstall = ''
     wrapProgram "$out/bin/k3sup" \
-      --prefix PATH : ${lib.makeBinPath [ openssh bash ]}
+      --prefix PATH : ${lib.makeBinPath [ openssh ]}
   '';
 
   meta = with lib; {
